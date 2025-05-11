@@ -15,7 +15,10 @@ const messageRoutes = require("./routes/messages");
 const userRoutes = require('./routes/users');
 const orders = require('./orders');
 const clientAuth = require('./ClientAuth/ClientAuth');
+
+if(process.env.NODE_ENV !== 'production'){
 dotenv.config();
+}
 const app = express();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_URLSALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || 'http://localhost:5173';
