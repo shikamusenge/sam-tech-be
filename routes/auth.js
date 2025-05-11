@@ -4,7 +4,11 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const { MongoClient } = require("mongodb");
 
-const uri = "mongodb://localhost:27017/samtechdb"; // Update if needed
+if(process.env.NODE_ENV !== 'production'){
+  const dotenv = require("dotenv");
+  dotenv.config();
+  }
+const uri = process.env.MONGO_DB_URI; // Update if needed
 const client = new MongoClient(uri);
 
 // === LOGIN ROUTE ===

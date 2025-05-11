@@ -1,10 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
 const Express = require('express');
 const Order = require('./models/Order');
 const app = Express.Router();
 if(process.env.NODE_ENV !== 'production'){
+  const dotenv = require('dotenv');
   dotenv.config();
   }
 app.get('/', async (req, res) => {

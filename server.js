@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require('cookie-parser');
 const cors = require("cors");
-const dotenv = require("dotenv");
 const productRoutes = require("./routes/products");
 const eventRoutes = require("./routes/events");
 const blogRoutes = require("./routes/blogs");
@@ -17,6 +16,7 @@ const orders = require('./orders');
 const clientAuth = require('./ClientAuth/ClientAuth');
 
 if(process.env.NODE_ENV !== 'production'){
+const dotenv = require("dotenv");
 dotenv.config();
 }
 const app = express();
@@ -53,12 +53,12 @@ app.use("/api/clients/orders", orders);
 app.use("/clients", clientAuth);
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_DB_URI)
   .then(() => {
     console.log("MongoDB connected");
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((err) => {
-  console.error("MongoDB connection error:", err,{URI:process.env.MONGO_URI});
+  console.error("MongoDB connection error:", err.message,{URI:process.env.MONGO_DB_URI});
     process.exit(1);
   });
