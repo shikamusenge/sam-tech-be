@@ -1,7 +1,9 @@
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 
-dotenv.config();
+if(process.env.NODE_ENV !== 'production'){
+  dotenv.config();
+  }
 
 const protectAdmin = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];

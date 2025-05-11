@@ -4,7 +4,9 @@ const dotenv = require('dotenv');
 const Express = require('express');
 const Order = require('./models/Order');
 const app = Express.Router();
-dotenv.config();
+if(process.env.NODE_ENV !== 'production'){
+  dotenv.config();
+  }
 app.get('/', async (req, res) => {
   try {
     const { status, search } = req.query;
