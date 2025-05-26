@@ -105,7 +105,7 @@ app.post('/api/login', async (req, res) => {
       secure: process.env.NODE_ENV === 'production'
     });
     
-    res.json({ message: 'Logged in successfully' });
+    res.json({ message: 'Logged in successfully',token });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
