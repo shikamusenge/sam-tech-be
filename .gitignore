@@ -1,3 +1,6 @@
 node_modules
 .env
-'product images/*'
+'product images/'
+public/product_images/
+public/event_images/
+public/uploads/
