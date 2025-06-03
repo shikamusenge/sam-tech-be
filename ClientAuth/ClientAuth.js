@@ -16,18 +16,46 @@ app.use(cors({
 }));
 const JWT_SECRET = process.env.JWT_SECRET || 'RGphSK1512200055';
 // Auth Middleware
+// const authMiddleware = async (req, res, next) => {
+//   try {
+//     const token = req.cookies.token;
+//     if (!token) return res.status(401).json({ message: 'Not authenticated' });
+
+//     const decoded = jwt.verify(token, JWT_SECRET);
+//     req.user = await User.findById(decoded.userId).select('-password');
+//     next();
+//   } catch (err) {
+//     res.status(401).json({ message: 'Invalid token' });
+//   }
+// };
+
 const authMiddleware = async (req, res, next) => {
   try {
+    console.log('Cookies received:', req.cookies); // Debug: Check if cookies exist
     const token = req.cookies.token;
-    if (!token) return res.status(401).json({ message: 'Not authenticated' });
+    if (!token) {
+      console.log('No token found in cookies');
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
 
+    console.log('Token found:', token); // Debug: Verify the token string
     const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = await User.findById(decoded.userId).select('-password');
+    console.log('Decoded JWT:', decoded); // Debug: Check decoded payload
+
+    const user = await User.findById(decoded.userId).select('-password');
+    if (!user) {
+      console.log('User not found in DB');
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    req.user = user;
     next();
   } catch (err) {
+    console.error('JWT Error:', err.message); // Debug: Log the exact error
     res.status(401).json({ message: 'Invalid token' });
   }
 };
+
 
 // Middleware
 
