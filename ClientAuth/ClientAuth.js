@@ -31,8 +31,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'RGphSK1512200055';
 
 const authMiddleware = async (req, res, next) => {
   try {
-    console.log('Cookies received:', req.cookies); // Debug: Check if cookies exist
-    const token = req.cookies.token;
+    console.log('Cookies received:', req.headers); // Debug: Check if cookies exist
+    const token = req.headers.authorization;
     if (!token) {
       console.log('No token found in cookies');
       return res.status(401).json({ message: 'Not authenticated' });
