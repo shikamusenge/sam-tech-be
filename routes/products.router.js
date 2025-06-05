@@ -70,7 +70,7 @@ router.put("/:id", async (req, res) => {
           url: file.path,
           public_id: file.filename
         }));
-        existingImages = [...newImages];
+        existingImages = [...existingImages, ...newImages];
       }
       
       updateData.images = existingImages;
