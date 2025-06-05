@@ -10,7 +10,7 @@ const productSchema = new mongoose.Schema({
     }
   ], // Changed from image to images (array)
   price: String,
-  discount: Number,
+  discount: String,
 });
 
 module.exports = mongoose.model("Product", productSchema);
