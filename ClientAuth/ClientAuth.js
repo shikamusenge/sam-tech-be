@@ -34,24 +34,24 @@ const authMiddleware = async (req, res, next) => {
     console.log('Cookies received:', req.headers); // Debug: Check if cookies exist
     const token = req.headers.authorization;
     if (!token) {
-      console.log('No token found in cookies');
+      // console.log('No token found in cookies');
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
-    console.log('Token found:', token); // Debug: Verify the token string
+    // console.log('Token found:', token); // Debug: Verify the token string
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log('Decoded JWT:', decoded); // Debug: Check decoded payload
+    // console.log('Decoded JWT:', decoded); // Debug: Check decoded payload
 
     const user = await User.findById(decoded.userId).select('-password');
     if (!user) {
-      console.log('User not found in DB');
+      // console.log('User not found in DB');
       return res.status(401).json({ message: 'User not found' });
     }
 
     req.user = user;
     next();
   } catch (err) {
-    console.error('JWT Error:', err.message); // Debug: Log the exact error
+    // console.error('JWT Error:', err.message); // Debug: Log the exact error
     res.status(401).json({ message: 'Invalid token' });
   }
 };
