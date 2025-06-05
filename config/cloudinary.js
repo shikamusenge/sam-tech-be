@@ -1,10 +1,11 @@
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
-if(process.env.NODE_ENV !== 'production'){
+
+if (process.env.NODE_ENV !== 'production') {
   const dotenv = require("dotenv");
   dotenv.config();
-  }
+}
 
 // Configure Cloudinary
 cloudinary.config({
@@ -13,18 +14,20 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-
 // Set up Cloudinary storage for Multer
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: {
-    folder: 'ecommerce-products',
-    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
-    transformation: [{ width: 800, height: 800, crop: 'limit' }]
+  params: async (req, file) => {
+    return {
+      folder: 'ecommerce-products',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+      transformation: [{ width: 800, height: 800, crop: 'limit' }],
+      public_id: file.originalname.split('.')[0] // Optional: remove if you want auto-ID
+    };
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 }).array("images", 6); // Allow up to 6 files

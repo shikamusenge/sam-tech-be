@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
 });
 
 // Add a new product
-router.post("/", async (req, res) => {
+router.post("/", (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ message: err.message });
@@ -24,24 +24,22 @@ router.post("/", async (req, res) => {
     try {
       const imageData = req.files?.map(file => ({
         url: file.path,
-        public_id: file.filename
+        public_id: file.filename // provided by multer-storage-cloudinary
       })) || [];
-      
+
       const newProduct = new Product({
         ...req.body,
         images: imageData
       });
-      
+
       await newProduct.save();
       res.status(201).json(newProduct);
     } catch (error) {
-      console.log(error);
-      
-      // Delete uploaded images if product creation fails
+      // Cleanup uploaded images if creation fails
       if (req.files) {
-        req.files.forEach(file => {
-          cloudinary.uploader.destroy(file.filename);
-        });
+        await Promise.all(
+          req.files.map(file => cloudinary.uploader.destroy(file.filename))
+        );
       }
       res.status(400).json({ message: error.message });
     }
@@ -49,7 +47,7 @@ router.post("/", async (req, res) => {
 });
 
 // Update a product
-router.put("/:id", async (req, res) => {
+router.put("/:id", (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       return res.status(400).json({ message: err.message });
@@ -63,8 +61,8 @@ router.put("/:id", async (req, res) => {
 
       const updateData = { ...req.body };
       let existingImages = product.images || [];
-      
-      // Add new images if any were uploaded
+
+      // Add new images if uploaded
       if (req.files && req.files.length > 0) {
         const newImages = req.files.map(file => ({
           url: file.path,
@@ -72,29 +70,29 @@ router.put("/:id", async (req, res) => {
         }));
         existingImages = [...existingImages, ...newImages];
       }
-      
+
       updateData.images = existingImages;
-      
+
       const updatedProduct = await Product.findByIdAndUpdate(
         req.params.id,
         updateData,
         { new: true }
       );
-      
+
       res.json(updatedProduct);
     } catch (error) {
-      // Delete newly uploaded images if update fails
+      // Cleanup any new images if update fails
       if (req.files) {
-        req.files.forEach(file => {
-          cloudinary.uploader.destroy(file.filename);
-        });
+        await Promise.all(
+          req.files.map(file => cloudinary.uploader.destroy(file.filename))
+        );
       }
       res.status(400).json({ message: error.message });
     }
   });
 });
 
-// Delete individual image
+// Delete an individual image from a product
 router.delete("/:id/images/:publicId", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -102,10 +100,10 @@ router.delete("/:id/images/:publicId", async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Remove the image from Cloudinary
+    // Remove image from Cloudinary
     await cloudinary.uploader.destroy(req.params.publicId);
 
-    // Remove the image from the array
+    // Remove image from MongoDB document
     product.images = product.images.filter(img => img.public_id !== req.params.publicId);
     await product.save();
 
@@ -119,12 +117,11 @@ router.delete("/:id/images/:publicId", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // First remove this product from all carts
+    // Remove this product from all carts
     await Cart.updateMany(
       { 'items.product': req.params.id },
       { $pull: { items: { product: req.params.id } } }
@@ -133,15 +130,15 @@ router.delete("/:id", async (req, res) => {
     // Delete all associated images from Cloudinary
     if (product.images && product.images.length > 0) {
       await Promise.all(
-        product.images.map(image => 
-          cloudinary.uploader.destroy(image.public_id)
-        )
+        product.images
+          .filter(img => img.public_id)
+          .map(img => cloudinary.uploader.destroy(img.public_id))
       );
     }
 
-    // Then delete the product
-    await Product.findByIdAndDelete(req.params.id);
-    
+    // Delete the product from DB
+    await product.deleteOne();
+
     res.json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(400).json({ message: error.message });
