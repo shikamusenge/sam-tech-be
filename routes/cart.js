@@ -67,8 +67,18 @@ router.get("/:userId", async (req, res) => {
     if (!cart) {
       return res.status(200).json({ items: [] });
     }
+
+    console.log({cartItems:cart.items[0]});
+    cart.items.forEach((element,item_index) => {
+      element.images.forEach((image,img_index)=>{
+        // cart.items[item_index].images[img_index]=JSON.parse(image;
+
+      })
+      
+    });
     
-    res.status(200).json(cart);
+    
+    return res.status(200).json(cart);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
